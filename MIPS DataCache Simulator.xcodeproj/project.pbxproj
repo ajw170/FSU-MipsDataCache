@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		987259651FBE7243006EAC02 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 987259641FBE7243006EAC02 /* main.cpp */; };
+		9884DB511FBE760000C9596B /* datacache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9884DB501FBE760000C9596B /* datacache.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -24,7 +24,7 @@
 
 /* Begin PBXFileReference section */
 		987259611FBE7243006EAC02 /* MIPS DataCache Simulator */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "MIPS DataCache Simulator"; sourceTree = BUILT_PRODUCTS_DIR; };
-		987259641FBE7243006EAC02 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		9884DB501FBE760000C9596B /* datacache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = datacache.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,7 +57,7 @@
 		987259631FBE7243006EAC02 /* MIPS DataCache Simulator */ = {
 			isa = PBXGroup;
 			children = (
-				987259641FBE7243006EAC02 /* main.cpp */,
+				9884DB501FBE760000C9596B /* datacache.cpp */,
 			);
 			path = "MIPS DataCache Simulator";
 			sourceTree = "<group>";
@@ -119,7 +119,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				987259651FBE7243006EAC02 /* main.cpp in Sources */,
+				9884DB511FBE760000C9596B /* datacache.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -216,6 +216,7 @@
 		987259691FBE7243006EAC02 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				OTHER_CPLUSPLUSFLAGS = "-I$(PROJECT_DIR)/MIPS\\ DataCache\\ Simulator";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -223,6 +224,7 @@
 		9872596A1FBE7243006EAC02 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				OTHER_CPLUSPLUSFLAGS = "-I$(PROJECT_DIR)/MIPS\\ DataCache\\ Simulator";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -246,6 +248,7 @@
 				9872596A1FBE7243006EAC02 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
