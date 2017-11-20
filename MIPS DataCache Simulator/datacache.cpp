@@ -1,9 +1,17 @@
-//
-//  datacache.cpp
-//  MIPS DataCache Simulator
-//
-//  Created by Andrew Wood on 11/16/17.
-//  Copyright © 2017 FSU. All rights reserved.
-//
+/*
+ Andrew J Wood
+ CDA3101 Project 6 - MIPS DataCache Simulator
+ November 16, 2017
+ 
+ Program description here.
+ 
+ Note that the code is self-documenting.
+ */
 
 #include <stdio.h>
+#include <iostream>
+
+int main()
+{
+    std::cout << "Hello world!\n";
+}
