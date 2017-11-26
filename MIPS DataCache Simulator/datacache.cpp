@@ -34,6 +34,43 @@ const size_t MAX_ASSOCIATIVITY = 8;
 void ReadConfig();
 void PrintConfig();
 size_t ReadDataTrace(std::vector<std::string> &);
+void ParseDataTrace(size_t);
+
+
+
+class DataStruct
+{
+public:
+    
+    DataStruct(); //default constructor
+    ~DataStruct(); //default destructor
+    
+    void EraseMembers()
+    {
+        cacheBlock.LRU = 0;
+        cacheBlock.Data = 0;
+        cacheBlock.Tag = 0;
+        cacheBlock.dirtyBit = 0;
+        cacheBlock.validBit = 0;
+    }
+    
+    //establishes a cahceBlock which holds all the relevant data
+    struct {
+        unsigned short LRU;
+        unsigned short Data; //we don't actually care about the data in this simulation
+        unsigned short Tag;
+        unsigned short dirtyBit;
+        unsigned short validBit;
+    } cacheBlock;
+    
+private:
+    //copies of DataStructs shouldn't occur and copy constructor is not implemented
+    DataStruct(DataStruct &)
+    {};
+    
+}; //end class DataStruct
+
+
 
 int main()
 {
@@ -45,13 +82,18 @@ int main()
     std::vector<std::string> traceDat;
     numDataLines = ReadDataTrace(traceDat);
     
+    //Configure data cache
     
+    DataStruct test;
     
+    test.cacheBlock.LRU = 0;
     
     
     
     
 }
+
+
 
 //Reads the configuration file and assigns values to program variables.
 //The configuration file is assumed to be valid for this program.
@@ -95,6 +137,8 @@ void ReadConfig()
     inConfigFile.close();
 }
 
+
+
 //Prints the configuration information to the
 void PrintConfig()
 {
@@ -102,6 +146,8 @@ void PrintConfig()
     std::cout << "   " << numSets << " " << associativityLevel << "-way set associative entries\n";
     std::cout << "   of line size " << lineSize << " bytes\n\n\n";
 }
+
+
 
 //Reads trace.dat file and stores it in a vector for later use
 size_t ReadDataTrace(std::vector<std::string> & traceDat)
@@ -111,7 +157,7 @@ size_t ReadDataTrace(std::vector<std::string> & traceDat)
     std::streambuf *cinBuf, *datBuf;
     cinBuf = std::cin.rdbuf(); //backs up the std::cin buffer.
     
-    //comment out this section to prepare for cin read
+    //*************comment out this section to prepare for cin read
     std::ifstream inDatFile("trace.dat",std::ios::in);
     if (!inDatFile)
     {
@@ -120,13 +166,20 @@ size_t ReadDataTrace(std::vector<std::string> & traceDat)
     }
     datBuf = inDatFile.rdbuf(); //obtains buffer for inFile stream
     std::cin.rdbuf(datBuf);   //Assign cin to the data buffer.  Now, cin will be reading from file.
-    //comment out this section to prepare for cin read
+    //*************comment out this section to prepare for cin read
     
+    std::string inputLine;
+    numDataLines = 0;
     
+    //continue reading until end found
+    while (std::getline(std::cin, inputLine))
+    {
+        traceDat.push_back(inputLine); //adds the line to the data vector
+        ++numDataLines;
+        
+    }
     
-    
-    
-    std::cin.rdbuf(cinBuf); //restore cin to original state
+    std::cin.rdbuf(cinBuf); //restore cin to original state; has no effect if previous section is commented out
     return numDataLines;
 }
 
