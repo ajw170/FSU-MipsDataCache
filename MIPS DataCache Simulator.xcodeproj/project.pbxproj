@@ -25,7 +25,8 @@
 /* Begin PBXFileReference section */
 		987259611FBE7243006EAC02 /* MIPS DataCache Simulator */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "MIPS DataCache Simulator"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9884DB501FBE760000C9596B /* datacache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = datacache.cpp; sourceTree = "<group>"; };
-		989DDA1B1FCB2D6B00626234 /* trace.config */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = trace.config; sourceTree = "<group>"; };
+		989DDA1E1FCB599B00626234 /* trace.config */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = trace.config; sourceTree = "<group>"; };
+		989DDA1F1FCB5BAB00626234 /* trace.dat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = trace.dat; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,8 +59,9 @@
 		987259631FBE7243006EAC02 /* MIPS DataCache Simulator */ = {
 			isa = PBXGroup;
 			children = (
+				989DDA1E1FCB599B00626234 /* trace.config */,
 				9884DB501FBE760000C9596B /* datacache.cpp */,
-				989DDA1B1FCB2D6B00626234 /* trace.config */,
+				989DDA1F1FCB5BAB00626234 /* trace.dat */,
 			);
 			path = "MIPS DataCache Simulator";
 			sourceTree = "<group>";
@@ -178,6 +180,10 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CPLUSPLUSFLAGS = (
+					"-I$(PROJECT_DIR)",
+					"-I$(PROJECT_DIR)/MIPS\\ DataCache\\ Simulator",
+				);
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -225,6 +231,10 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				OTHER_CPLUSPLUSFLAGS = (
+					"-I$(PROJECT_DIR)",
+					"-I$(PROJECT_DIR)/MIPS\\ DataCache\\ Simulator",
+				);
 				SDKROOT = macosx;
 			};
 			name = Release;
