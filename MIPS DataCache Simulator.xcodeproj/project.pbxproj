@@ -25,6 +25,7 @@
 /* Begin PBXFileReference section */
 		987259611FBE7243006EAC02 /* MIPS DataCache Simulator */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "MIPS DataCache Simulator"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9884DB501FBE760000C9596B /* datacache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = datacache.cpp; sourceTree = "<group>"; };
+		989DDA1B1FCB2D6B00626234 /* trace.config */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = trace.config; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +59,7 @@
 			isa = PBXGroup;
 			children = (
 				9884DB501FBE760000C9596B /* datacache.cpp */,
+				989DDA1B1FCB2D6B00626234 /* trace.config */,
 			);
 			path = "MIPS DataCache Simulator";
 			sourceTree = "<group>";
