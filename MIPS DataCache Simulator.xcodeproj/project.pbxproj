@@ -28,6 +28,9 @@
 		989DDA1E1FCB599B00626234 /* trace.config */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = trace.config; sourceTree = "<group>"; };
 		989DDA1F1FCB5BAB00626234 /* trace.dat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = trace.dat; sourceTree = "<group>"; };
 		989DDA201FCBCC2B00626234 /* trace2.dat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = trace2.dat; sourceTree = "<group>"; };
+		989DDA211FCBE3CF00626234 /* tst1.sml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = tst1.sml; sourceTree = "<group>"; };
+		989DDA221FCBE3D900626234 /* tst2.sml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = tst2.sml; sourceTree = "<group>"; };
+		989DDA231FCBE51300626234 /* testBig4.dat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = testBig4.dat; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,6 +67,9 @@
 				9884DB501FBE760000C9596B /* datacache.cpp */,
 				989DDA1F1FCB5BAB00626234 /* trace.dat */,
 				989DDA201FCBCC2B00626234 /* trace2.dat */,
+				989DDA211FCBE3CF00626234 /* tst1.sml */,
+				989DDA221FCBE3D900626234 /* tst2.sml */,
+				989DDA231FCBE51300626234 /* testBig4.dat */,
 			);
 			path = "MIPS DataCache Simulator";
 			sourceTree = "<group>";

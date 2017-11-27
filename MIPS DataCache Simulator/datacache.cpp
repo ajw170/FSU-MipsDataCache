@@ -31,7 +31,7 @@ size_t numDataLines;
 size_t numEntries;
 
 //Program constants; represent the greatest possible extents
-const size_t MAX_SETS = 8192;
+const size_t MAX_SETS = 10;
 const size_t MAX_ASSOCIATIVITY = 8;
 
 
@@ -500,7 +500,7 @@ size_t ReadDataTrace(std::vector<std::string> & traceDat)
     cinBuf = std::cin.rdbuf(); //backs up the std::cin buffer.
     
     //*************comment out this section to prepare for cin read
-    std::ifstream inDatFile("trace2.dat",std::ios::in);
+    std::ifstream inDatFile("testBig4.dat",std::ios::in);
     if (!inDatFile)
     {
         std::cerr << "Failed to read data file.\n";
