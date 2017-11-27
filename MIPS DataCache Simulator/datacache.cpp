@@ -16,9 +16,12 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 
 //Variables red from configuation file
-size_t numSets;
+size_t numSets; //set is similar to a block
 size_t associativityLevel;
 size_t lineSize;
 size_t numDataLines;
@@ -27,31 +30,64 @@ size_t numDataLines;
 size_t numEntries;
 
 //Program constants; represent the greatest possible extents
-const size_t MAX_SETS = 8192;
+const size_t MAX_SETS = 8096;
 const size_t MAX_ASSOCIATIVITY = 8;
+
 
 //Function prototypes
 void ReadConfig();
 void PrintConfig();
 size_t ReadDataTrace(std::vector<std::string> &);
 void ParseDataTrace(size_t);
+void ModeValidityCheck(const char);
+bool SizeCheck(const unsigned int);
+bool AlignmentCheck(const unsigned int,const unsigned int);
 
 
-
-class DataStruct
+class CacheBlock
 {
 public:
+    //default constructor
+    CacheBlock()
+    {
+        blockData.LRU = 0;
+        blockData.Data = 0;
+        blockData.Tag = 0;
+        blockData.dirtyBit = 0;
+        blockData.validBit = 0;
+    };
     
-    DataStruct(); //default constructor
-    ~DataStruct(); //default destructor
+    //constructor with argument
+    CacheBlock(size_t init)
+    {
+        blockData.LRU = init;
+        blockData.Data = init;
+        blockData.Tag = init;
+        blockData.dirtyBit = init;
+        blockData.validBit = init;
+    }
+    
+    //default destructor
+   ~CacheBlock()
+    {};
+    
+    //copy constructor, necessary for vector assignment
+    CacheBlock(const CacheBlock &c2)
+    {
+        blockData.LRU = c2.blockData.LRU;
+        blockData.Data = c2.blockData.Data;
+        blockData.Tag = c2.blockData.Tag;
+        blockData.dirtyBit = c2.blockData.dirtyBit;
+        blockData.validBit = c2.blockData.validBit;
+    }
     
     void EraseMembers()
     {
-        cacheBlock.LRU = 0;
-        cacheBlock.Data = 0;
-        cacheBlock.Tag = 0;
-        cacheBlock.dirtyBit = 0;
-        cacheBlock.validBit = 0;
+        blockData.LRU = 0;
+        blockData.Data = 0;
+        blockData.Tag = 0;
+        blockData.dirtyBit = 0;
+        blockData.validBit = 0;
     }
     
     //establishes a cahceBlock which holds all the relevant data
@@ -61,14 +97,19 @@ public:
         unsigned short Tag;
         unsigned short dirtyBit;
         unsigned short validBit;
-    } cacheBlock;
+    } blockData;
     
 private:
     //copies of DataStructs shouldn't occur and copy constructor is not implemented
-    DataStruct(DataStruct &)
-    {};
+    
     
 }; //end class DataStruct
+
+
+
+//Important typeDefs
+typedef std::vector<CacheBlock> cacheSet; //vector of cacheBlocks of 8192 sets
+typedef std::vector<cacheSet> setAssociation; //vector of cacheSets
 
 
 
@@ -82,15 +123,127 @@ int main()
     std::vector<std::string> traceDat;
     numDataLines = ReadDataTrace(traceDat);
     
-    //Configure data cache
+    CacheBlock defaultBlock(0); //creates a cache block with all bit fields initialized to 0.
+    setAssociation cacheAssociation(MAX_ASSOCIATIVITY, cacheSet(MAX_SETS,defaultBlock));
     
-    DataStruct test;
+    char            mode;
+    unsigned int    dataSize;
+    unsigned int    address;
+    bool            sizeError;
+    bool            alignmentError;
+    unsigned int    index;
+    unsigned int    offset;
+    unsigned int    tag;
+    unsigned int    hitCounter;
+    unsigned int    missCounter;
+    unsigned int    memrefs;
     
-    test.cacheBlock.LRU = 0;
+    size_t refCounter = 0; //holds the number of references read
+    
+    //Output header
+    std::cout << "Results for Each Reference\n\n";
+    std::cout << "Ref  Access Address    Tag   Index Offset Result Memrefs\n";
+    std::cout << "---- ------ -------- ------- ----- ------ ------ -------\n";
+
+    //Main program Loop
+    for (size_t i = 0; i < numDataLines; ++i)
+    {
+        sscanf(traceDat[i].c_str(),"%c:%d:%x", &mode, &dataSize, &address);
+        
+        //check if mode is 'R' or 'W', exit otherwise
+        ModeValidityCheck(mode);
+        
+        //check if data size is 1,2,4, or 8
+        sizeError = SizeCheck(dataSize);
+        if(sizeError)
+        {
+            std::cout << "line " << (i + 1) << " has illegal size " << dataSize << "\n";
+            continue; //continue to next line
+        }
+        
+        alignmentError = AlignmentCheck(dataSize, address);
+        if (alignmentError)
+        {
+            std::cout << "line " << (i + 1) << " has misaligned reference at address " << address << " for size " << dataSize << "\n";
+            continue; //continue to next line
+        }
+        
+        //no size or alignment errors, increment ref Counter
+        ++refCounter;
+        std::cout << "This was a valid line\n";
+        
+        
+        
+        
+        
+        
+        /*Methodology for determining appropriate values for index, offset, and tag:
+         The address is a 32-bit number represented as
+         
+         XXXX XXXX XXXX XXXX XXXX XXXX XXXX XXXX
+         
+         In order to determine the appropriate index, offset, and tag value, we must first determine
+         the number of bits that represent the index and offset.  Then, the reamining bits represent the
+         tag.
+         
+         The structure of the address is as follows:
+         
+         |---------tag----------|--index---|--offset--|
+         
+         The number of bits for the index and offset are computed as:
+         
+         offset = log2(lineSize), e.g. log2(16) = 4
+         index = log2(setSize) e.g. log2(8) = 3
+         tag = any bits that remain
+         */
+        
+        
+        //Determine the index, offset, and tag
+        unsigned int tempAddress = address; //to preserve oriignal address value
+        
+        unsigned int offsetBitMask = static_cast<unsigned int>(lineSize - 1);
+        unsigned int offsetShamt = static_cast<unsigned int>(log2(lineSize));
+        offset = tempAddress & offsetBitMask; //determine offset
+        tempAddress = tempAddress >> offsetShamt;
+        
+        unsigned int indexBitMask = static_cast<unsigned int>(numSets - 1);
+        unsigned int indexShamt = static_cast<unsigned int>(log2(numSets));
+        index = tempAddress & indexBitMask; //determine index
+        tempAddress = tempAddress >> indexShamt;
+        
+        tag = address; //determine tag from remaining bits
+        
+    
+        //Write the result to the cache
+        //We don't need to worry about numSets; this is taken care of by Index.
+        //Line size is irrelevant for this portion
+        //We only have to worry about associativity level
+        
+        //Relevant varibles: mode
+        //                   refCounter
+        //                   hitCounter
+        //                   missCounter
+        //                   memrefs
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    }
     
     
+
     
-    
+    std::cout << "Hold program\n";
 }
 
 
@@ -181,6 +334,38 @@ size_t ReadDataTrace(std::vector<std::string> & traceDat)
     
     std::cin.rdbuf(cinBuf); //restore cin to original state; has no effect if previous section is commented out
     return numDataLines;
+}
+
+//checks to see if there is a problem with the input based on configuration properties.
+
+void ModeValidityCheck(const char mode)
+{
+    if (mode != 'R' && mode != 'W' && mode != 'r' && mode != 'w')
+    {
+        std::cerr << "Mode is invalid.  Exiting.\n";
+        exit(EXIT_FAILURE);
+    }
+}
+
+//returns TRUE if there is an error with the data size
+bool SizeCheck(const unsigned int size)
+{
+    bool sizeError = 0; //set default to no problem
+    if (size != 1 && size != 2 && size != 4 && size != 8)
+    {
+        sizeError = 1;
+    }
+    return sizeError;
+}
+
+//returns TRUE if there is an error with the alignment
+bool AlignmentCheck(const unsigned int size, const unsigned int address)
+{
+    //if size is not multiple of the address then error
+    if ((address % size) != 0)
+        return 1;
+    else
+        return 0;
 }
 
 
