@@ -31,7 +31,7 @@ size_t numDataLines;
 size_t numEntries;
 
 //Program constants; represent the greatest possible extents
-const size_t MAX_SETS = 12;
+const size_t MAX_SETS = 8192;
 const size_t MAX_ASSOCIATIVITY = 8;
 
 
@@ -167,12 +167,6 @@ int main()
         
         //no size or alignment errors, increment ref Counter
         ++refCounter;
-        //std::cout << "This was a valid line\n";
-        
-        
-        
-        
-        
         
         /*Methodology for determining appropriate values for index, offset, and tag:
          The address is a 32-bit number represented as
@@ -233,7 +227,10 @@ int main()
         //read mode
         if (mode == 'R' || mode == 'r')
         {
-            //Check to see if tag is alreay there in corresponding index in one of the sets
+            //set memref to 0 by default, possible if HIT
+            memrefs = 0;
+            
+            //Check to see if tag is alreay there in corresponding index in one of the sets, HIT
             for (size_t i = 0; i < associativityLevel; ++i)
             {
                 isValid = (cacheAssociation[i])[index].blockData.validBit;
@@ -243,8 +240,10 @@ int main()
                     isThere = 1;
                 }
             }
-            if (!isThere) //if the data was not found, update the cache
+            if (!isThere) //if the data was not found, update the cache, MISS
             {
+                memrefs = 1; //memref will be at least 1, potentially 2 if dirty bit is found.
+                
                 //assume that we are starting with index 0 and try to find one that has a lower value
                 //"0" indicates least recently used
                 unsigned int LRU_Test;
@@ -270,6 +269,13 @@ int main()
                 cacheAssociation[indexToUse][index].blockData.Tag = tag;
                 cacheAssociation[indexToUse][index].blockData.LRU = (associativityLevel - 1); //set max val to associativity level
                 cacheAssociation[indexToUse][index].blockData.Data = 0; //we don't care about the data
+                
+                //check to see if this selected cache block is dirty.  If it is, remove the dirty bit, and set the memRef to 2.
+                if (cacheAssociation[indexToUse][index].blockData.dirtyBit) //if dirtyBit =1
+                {
+                    memrefs = 2;
+                    cacheAssociation[indexToUse][index].blockData.dirtyBit = 0; //reset dirty bit to 0
+                }
             }
             
             //output results
@@ -291,18 +297,108 @@ int main()
                 std::cout << "miss";
                 ++missCounter;
             }
-            std::cout << std::setw(8);
-            if (isThere) //if it was a hit
-                std::cout << "0";
-            else
-                std::cout << "1";
+            std::cout << std::setw(8) << memrefs;
             std::cout << "\n"; //newline
-        }
         
+        } // mode = read
+        
+        
+        
+        //write mode - a tad bit more complicated
+        //Relevant varibles: mode
+        //                   isThere
+        //                   refCounter
+        //                   hitCounter
+        //                   missCounterisVal
+        //                   memrefs
+        //                   isValid
+        //                   associativityLevel
+        //                   cacheAssociation[index is 0 to (associativityLevel -1)]
         else if (mode == 'W' || mode == 'w')
         {
-            std::cout << "Encountered write mode.\n";
-        }
+            //set memref to 0 by default, for write, memref can only be 0 or 1
+            memrefs = 0;
+            
+            //Check to see if tag is alreay there in corresponding index in one of the sets, HIT
+            for (size_t i = 0; i < associativityLevel; ++i)
+            {
+                isValid = (cacheAssociation[i])[index].blockData.validBit;
+                tempTag = (cacheAssociation[i])[index].blockData.Tag;
+                if (isValid && (tempTag == tag))  //its a hit
+                {
+                    isThere = 1;
+                    //check to see if this selected cache block is dirty
+                    if (cacheAssociation[i][index].blockData.dirtyBit) //if it is already a dirtyBit
+                    {
+                        memrefs = 1; //memref will be 1, since we need to write the value back to memory.
+                    }
+                    //we're writing to the location, so we MUST mark it as dirty
+                    cacheAssociation[i][index].blockData.dirtyBit = 1; //ensure the bit stays dirty
+                }
+            }
+            
+            if (!isThere) //if the data was not found, MISS
+            {
+                memrefs = 1; //memref is at least 1 since it is a miss
+                
+                //assume that we are starting with index 0 and try to find one that has a lower value
+                //"0" indicates least recently used
+                unsigned int LRU_Test;
+                unsigned int indexToUse = 0;
+                
+                //determine which set to update
+                for (unsigned int i = 0; i < associativityLevel; ++i)
+                {
+                    LRU_Test = cacheAssociation[i][index].blockData.LRU;
+                    if (LRU_Test < cacheAssociation[indexToUse][index].blockData.LRU)
+                        indexToUse = i;
+                }
+                
+                //subtract 1 from every LRU assuming it is not already 0.
+                for (unsigned int i = 0; i < associativityLevel; ++i)
+                {
+                    if (cacheAssociation[i][index].blockData.LRU > 0) //if the LRU bit is greater than 0
+                        --(cacheAssociation[i][index].blockData.LRU); //subract 1.
+                }
+                
+                //check to see if this selected cache block is dirty.  If it is set the memRef to 2.
+                if (cacheAssociation[indexToUse][index].blockData.dirtyBit) //if dirtyBit =1
+                {
+                    memrefs = 2;
+                }
+                
+                //Now we know which set to update.  Perform the update.
+                cacheAssociation[indexToUse][index].blockData.dirtyBit = 1; //set Dirty bit to 1 to indicate it was written to
+                cacheAssociation[indexToUse][index].blockData.validBit = 1; //in case it is already not 1
+                cacheAssociation[indexToUse][index].blockData.Tag = tag;
+                cacheAssociation[indexToUse][index].blockData.LRU = (associativityLevel - 1); //set max val to associativity level
+                cacheAssociation[indexToUse][index].blockData.Data = 0; //we don't care about the data
+            }
+            
+            //output results
+            std::cout << std::right; //right align
+            std::cout << std::setw(4) << refCounter;
+            std::cout << std::setw(7) << "write";
+            std::cout << std::setw(9) << std::hex << address;
+            std::cout << std::setw(8) << std::hex << tag;
+            std::cout << std::setw(6) << std::dec << index;
+            std::cout << std::setw(7) << offset;
+            std::cout << std::setw(7);
+            if (isThere) //if it was a hit
+            {
+                std::cout << "hit";
+                ++hitCounter;
+            }
+            else
+            {
+                std::cout << "miss";
+                ++missCounter;
+            }
+            std::cout << std::setw(8) << memrefs;
+            std::cout << "\n"; //newline
+        
+        } //mode = write
+        
         else //program should never arrive here
         {
             std::cerr << "There was a fatal error in processing.\n";
@@ -404,7 +500,7 @@ size_t ReadDataTrace(std::vector<std::string> & traceDat)
     cinBuf = std::cin.rdbuf(); //backs up the std::cin buffer.
     
     //*************comment out this section to prepare for cin read
-    std::ifstream inDatFile("trace.dat",std::ios::in);
+    std::ifstream inDatFile("trace2.dat",std::ios::in);
     if (!inDatFile)
     {
         std::cerr << "Failed to read data file.\n";
