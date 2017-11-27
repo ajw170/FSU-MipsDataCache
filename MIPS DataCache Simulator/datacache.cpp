@@ -16,6 +16,7 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <iomanip>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -30,7 +31,7 @@ size_t numDataLines;
 size_t numEntries;
 
 //Program constants; represent the greatest possible extents
-const size_t MAX_SETS = 8096;
+const size_t MAX_SETS = 12;
 const size_t MAX_ASSOCIATIVITY = 8;
 
 
@@ -42,6 +43,7 @@ void ParseDataTrace(size_t);
 void ModeValidityCheck(const char);
 bool SizeCheck(const unsigned int);
 bool AlignmentCheck(const unsigned int,const unsigned int);
+void PrintSummary(size_t,size_t,size_t);
 
 
 class CacheBlock
@@ -99,10 +101,6 @@ public:
         unsigned short validBit;
     } blockData;
     
-private:
-    //copies of DataStructs shouldn't occur and copy constructor is not implemented
-    
-    
 }; //end class DataStruct
 
 
@@ -134,11 +132,9 @@ int main()
     unsigned int    index;
     unsigned int    offset;
     unsigned int    tag;
-    unsigned int    hitCounter;
-    unsigned int    missCounter;
-    unsigned int    memrefs;
-    
-    size_t refCounter = 0; //holds the number of references read
+    size_t          hitCounter;
+    size_t          missCounter;
+    size_t          refCounter = 0; //holds the number of references read
     
     //Output header
     std::cout << "Results for Each Reference\n\n";
@@ -164,13 +160,14 @@ int main()
         alignmentError = AlignmentCheck(dataSize, address);
         if (alignmentError)
         {
-            std::cout << "line " << (i + 1) << " has misaligned reference at address " << address << " for size " << dataSize << "\n";
+            std::cout << "line " << (i + 1) << " has misaligned reference at address " << std::hex << address << " for size " <<
+                std::dec << dataSize << "\n";
             continue; //continue to next line
         }
         
         //no size or alignment errors, increment ref Counter
         ++refCounter;
-        std::cout << "This was a valid line\n";
+        //std::cout << "This was a valid line\n";
         
         
         
@@ -211,7 +208,7 @@ int main()
         index = tempAddress & indexBitMask; //determine index
         tempAddress = tempAddress >> indexShamt;
         
-        tag = address; //determine tag from remaining bits
+        tag = tempAddress; //determine tag from remaining bits
         
     
         //Write the result to the cache
@@ -219,34 +216,114 @@ int main()
         //Line size is irrelevant for this portion
         //We only have to worry about associativity level
         
+        bool isThere = 0;
+        unsigned int memrefs = 0;
+        unsigned int tempTag = 0;
+        bool isValid = 0;
+        
         //Relevant varibles: mode
         //                   refCounter
         //                   hitCounter
-        //                   missCounter
+        //                   missCounterisVal
         //                   memrefs
+        //                   isValid
+        //                   associativityLevel
+        //                   cacheAssociation[index is 0 to (associativityLevel -1)]
         
+        //read mode
+        if (mode == 'R' || mode == 'r')
+        {
+            //Check to see if tag is alreay there in corresponding index in one of the sets
+            for (size_t i = 0; i < associativityLevel; ++i)
+            {
+                isValid = (cacheAssociation[i])[index].blockData.validBit;
+                tempTag = (cacheAssociation[i])[index].blockData.Tag;
+                if (isValid && (tempTag == tag))
+                {
+                    isThere = 1;
+                }
+            }
+            if (!isThere) //if the data was not found, update the cache
+            {
+                //assume that we are starting with index 0 and try to find one that has a lower value
+                //"0" indicates least recently used
+                unsigned int LRU_Test;
+                unsigned int indexToUse = 0;
+                
+                //determine which set to update
+                for (unsigned int i = 0; i < associativityLevel; ++i)
+                {
+                    LRU_Test = cacheAssociation[i][index].blockData.LRU;
+                    if (LRU_Test < cacheAssociation[indexToUse][index].blockData.LRU)
+                        indexToUse = i;
+                }
+                
+                //subtract 1 from every LRU assuming it is not already 0.
+                for (unsigned int i = 0; i < associativityLevel; ++i)
+                {
+                    if (cacheAssociation[i][index].blockData.LRU > 0) //if the LRU bit is greater than 0
+                        --(cacheAssociation[i][index].blockData.LRU); //subract 1.
+                }
+                
+                //Now we know which set to update.  Perform the update.
+                cacheAssociation[indexToUse][index].blockData.validBit = 1; //in case it is already not 1
+                cacheAssociation[indexToUse][index].blockData.Tag = tag;
+                cacheAssociation[indexToUse][index].blockData.LRU = (associativityLevel - 1); //set max val to associativity level
+                cacheAssociation[indexToUse][index].blockData.Data = 0; //we don't care about the data
+            }
+            
+            //output results
+            std::cout << std::right; //right align
+            std::cout << std::setw(4) << refCounter;
+            std::cout << std::setw(7) << "read";
+            std::cout << std::setw(9) << std::hex << address;
+            std::cout << std::setw(8) << std::hex << tag;
+            std::cout << std::setw(6) << std::dec << index;
+            std::cout << std::setw(7) << offset;
+            std::cout << std::setw(7);
+            if (isThere) //if it was a hit
+            {
+                std::cout << "hit";
+                ++hitCounter;
+            }
+            else
+            {
+                std::cout << "miss";
+                ++missCounter;
+            }
+            std::cout << std::setw(8);
+            if (isThere) //if it was a hit
+                std::cout << "0";
+            else
+                std::cout << "1";
+            std::cout << "\n"; //newline
+        }
         
+        else if (mode == 'W' || mode == 'w')
+        {
+            std::cout << "Encountered write mode.\n";
+        }
+        else //program should never arrive here
+        {
+            std::cerr << "There was a fatal error in processing.\n";
+            exit(EXIT_FAILURE);
+        }
         
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-    }
+    }//end main program loop
     
-    
+    PrintSummary(hitCounter,missCounter,refCounter);
 
-    
-    std::cout << "Hold program\n";
-}
+} //end main
 
 
+
+
+
+
+
+
+
+/* Function Definitions and Implementations */
 
 //Reads the configuration file and assigns values to program variables.
 //The configuration file is assumed to be valid for this program.
@@ -298,6 +375,22 @@ void PrintConfig()
     std::cout << "Cache Configuration\n\n";
     std::cout << "   " << numSets << " " << associativityLevel << "-way set associative entries\n";
     std::cout << "   of line size " << lineSize << " bytes\n\n\n";
+}
+
+
+
+//Prints the summary statistics
+void PrintSummary(size_t hitCounter, size_t missCounter, size_t refCounter)
+{
+    std::cout << "\n\nSimulation Summary Statistics\n";
+    std::cout << "-----------------------------\n";
+    std::cout << "Total hits       : " << hitCounter << "\n";
+    std::cout << "Total misses     : " << missCounter << "\n";
+    std::cout << "Total accesses   : " << refCounter << "\n";
+    float hitRatio = static_cast<float>(hitCounter) / refCounter;
+    float missRatio = static_cast<float>(missCounter) / refCounter;
+    std::cout << "Hit ratio        : " << std::fixed << std::setprecision(6) << hitRatio << "\n";
+    std::cout << "Miss ratio       : " << std::fixed << std::setprecision(6) << missRatio << "\n\n";
 }
 
 
@@ -367,11 +460,3 @@ bool AlignmentCheck(const unsigned int size, const unsigned int address)
     else
         return 0;
 }
-
-
-
-
-
-
-
-
