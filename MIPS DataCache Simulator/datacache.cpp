@@ -148,9 +148,9 @@ int main()
     std::cout << "---- ------ -------- ------- ----- ------ ------ -------\n";
 
     //Main program Loop
-    for (size_t i = 0; i < numDataLines; ++i)
+    for (size_t programLine = 0; programLine < numDataLines; ++programLine)
     {
-        sscanf(traceDat[i].c_str(),"%c:%d:%x", &mode, &dataSize, &address);
+        sscanf(traceDat[programLine].c_str(),"%c:%d:%x", &mode, &dataSize, &address);
         
         //check if mode is 'R' or 'W', exit otherwise
         ModeValidityCheck(mode);
@@ -159,14 +159,14 @@ int main()
         sizeError = SizeCheck(dataSize);
         if(sizeError)
         {
-            std::cerr << "line " << (i + 1) << " has illegal size " << dataSize << "\n";
+            std::cerr << "line " << (programLine + 1) << " has illegal size " << dataSize << "\n";
             continue; //continue to next line
         }
         
         alignmentError = AlignmentCheck(dataSize, address);
         if (alignmentError)
         {
-            std::cerr << "line " << (i + 1) << " has misaligned reference at address " << std::hex << address << " for size " <<
+            std::cerr << "line " << (programLine + 1) << " has misaligned reference at address " << std::hex << address << " for size " <<
                 std::dec << dataSize << "\n";
             continue; //continue to next line
         }
@@ -179,12 +179,12 @@ int main()
         
         unsigned int offsetBitMask = static_cast<unsigned int>(lineSize - 1);
         unsigned int offsetShamt = static_cast<unsigned int>(log2(lineSize));
-        offset = tempAddress & offsetBitMask; //determine offset
+        offset = tempAddress & offsetBitMask;       //determine offset
         tempAddress = tempAddress >> offsetShamt;
         
         unsigned int indexBitMask = static_cast<unsigned int>(numSets - 1);
         unsigned int indexShamt = static_cast<unsigned int>(log2(numSets));
-        index = tempAddress & indexBitMask; //determine index
+        index = tempAddress & indexBitMask;         //determine index
         tempAddress = tempAddress >> indexShamt;
         
         tag = tempAddress; //determine tag from remaining bits
@@ -198,6 +198,7 @@ int main()
         unsigned int memrefs = 0;
         unsigned int tempTag = 0;
         bool isValid = 0;
+        size_t hitSet = 0;
         
         //Relevant varibles: mode
         //                   refCounter
@@ -208,215 +209,165 @@ int main()
         //                   associativityLevel
         //                   cacheAssociation[index is 0 to (associativityLevel -1)]
         
-        //read mode
-        if (mode == 'R' || mode == 'r')
+        memrefs = 0; //set memrefs to 0 to start with
+        
+        
+        //check to see if tag is already in corresponding index. "isThere" tells us if it is a hit or miss
+        for (size_t i = 0; i < associativityLevel; ++i)
         {
-            //set memref to 0 by default, possible if HIT
-            memrefs = 0;
-            
-            //Check to see if tag is alreay there in corresponding index in one of the sets, HIT
-            for (size_t i = 0; i < associativityLevel; ++i)
+            isValid = (cacheAssociation[i])[index].blockData.validBit;
+            tempTag = (cacheAssociation[i])[index].blockData.Tag;
+            if (isValid && (tempTag == tag))
             {
-                isValid = (cacheAssociation[i])[index].blockData.validBit;
-                tempTag = (cacheAssociation[i])[index].blockData.Tag;
-                if (isValid && (tempTag == tag))
-                {
-                    isThere = 1;
-                }
+                isThere = 1;
+                hitSet = i;
             }
-            if (!isThere) //if the data was not found, update the cache, MISS
-            {
-                memrefs = 1; //memref will be at least 1, potentially 2 if dirty bit is found.
-                
-                //assume that we are starting with index 0 and try to find one that has a lower value
-                //"0" indicates least recently used
-                unsigned int LRU_Test;
-                unsigned int indexToUse = 0;
-                
-                //determine which set to update
-                for (unsigned int i = 0; i < associativityLevel; ++i)
-                {
-                    LRU_Test = cacheAssociation[i][index].blockData.LRU;
-                    if (LRU_Test < cacheAssociation[indexToUse][index].blockData.LRU)
-                        indexToUse = i;
-                }
-                
-                //subtract 1 from every LRU assuming it is not already 0.
-                for (unsigned int i = 0; i < associativityLevel; ++i)
-                {
-                    if (cacheAssociation[i][index].blockData.LRU > 0) //if the LRU bit is greater than 0
-                        --(cacheAssociation[i][index].blockData.LRU); //subract 1.
-                }
-                
-                //Now we know which set to update.  Perform the update.
-                cacheAssociation[indexToUse][index].blockData.validBit = 1; //in case it is already not 1
-                cacheAssociation[indexToUse][index].blockData.Tag = tag;
-                cacheAssociation[indexToUse][index].blockData.LRU = (associativityLevel - 1); //set max val to associativity level
-                cacheAssociation[indexToUse][index].blockData.Data = 0; //we don't care about the data
-                
-                //check to see if this selected cache block is dirty.  If it is, remove the dirty bit, and set the memRef to 2.
-                if (cacheAssociation[indexToUse][index].blockData.dirtyBit) //if dirtyBit =1
-                {
-                    memrefs = 2;
-                    cacheAssociation[indexToUse][index].blockData.dirtyBit = 0; //reset dirty bit to 0
-                }
-            }
-            
-            //output results
-            std::cout << std::right; //right align
-            std::cout << std::setw(4) << refCounter;
-            std::cout << std::setw(7) << "read";
-            std::cout << std::setw(9) << std::hex << address;
-            std::cout << std::setw(8) << std::hex << tag;
-            std::cout << std::setw(6) << std::dec << index;
-            std::cout << std::setw(7) << offset;
-            std::cout << std::setw(7);
-            if (isThere) //if it was a hit
-            {
-                std::cout << "hit";
-                ++hitCounter;
-            }
-            else
-            {
-                std::cout << "miss";
-                ++missCounter;
-            }
-            std::cout << std::setw(8) << memrefs;
-            std::cout << "\n"; //newline
-        
-        } // mode = read
-        
-        
-        
-        //write mode - a tad bit more complicated
-        //Relevant varibles: mode
-        //                   isThere
-        //                   refCounter
-        //                   hitCounter
-        //                   missCounterisVal
-        //                   memrefs
-        //                   isValid
-        //                   associativityLevel
-        //                   cacheAssociation[index is 0 to (associativityLevel -1)]
-        else if (mode == 'W' || mode == 'w')
-        {
-            //set memref to 0 by default
-            memrefs = 0;
-            
-            //********************************HIT**********************************************
-            //Check to see if tag is alreay there in corresponding index in one of the sets, HIT
-            for (size_t i = 0; i < associativityLevel; ++i)
-            {
-                isValid = (cacheAssociation[i])[index].blockData.validBit;
-                tempTag = (cacheAssociation[i])[index].blockData.Tag;
-                if (isValid && (tempTag == tag))  //its a hit
-                {
-                    isThere = 1;
-                    
-                    /*
-                    //check to see if this selected cache block is dirty
-                    if (cacheAssociation[i][index].blockData.dirtyBit) //if it is already a dirtyBit
-                    {
-                        memrefs = 1; //memref will be 1, since we need to write the value back to memory.
-                    }
-                     */
-            
-                    //we're writing to the location, so we MUST mark it as dirty
-                    cacheAssociation[i][index].blockData.dirtyBit = 1; //ensure the bit stays dirty
-                    
-                    
-                    
-                    //subtract 1 from every LRU assuming it is not already 0.
-                    //only do this if the block we're writing do is NOT already assigned the highest LRU level
-                    if (cacheAssociation[i][index].blockData.LRU != (associativityLevel-1))
-                    {
-                        for (unsigned int i = 0; i < associativityLevel; ++i)
-                        {
-                            if (cacheAssociation[i][index].blockData.LRU > 0) //if the LRU bit is greater than 0
-                                --(cacheAssociation[i][index].blockData.LRU); //subract 1.
-                        }
-                    }
-                    
-                    //now we need to ensure that LRU gets updated with the highest LRU level
-                    cacheAssociation[i][index].blockData.LRU = (associativityLevel - 1); //set max val to associativity level
-                     
-                }
-            }
-            
-            if (!isThere) //if the data was not found, MISS
-            {
-                memrefs = 1; //mmemref will be at least 1
-                
-                //assume that we are starting with index 0 and try to find one that has a lower value
-                //"0" indicates least recently used
-                unsigned int LRU_Test;
-                unsigned int indexToUse = 0;
-                
-                //determine which set to update
-                for (unsigned int i = 0; i < associativityLevel; ++i)
-                {
-                    LRU_Test = cacheAssociation[i][index].blockData.LRU;
-                    if (LRU_Test < cacheAssociation[indexToUse][index].blockData.LRU)
-                        indexToUse = i;
-                }
-                
-                //subtract 1 from every LRU assuming it is not already 0.
-                for (unsigned int i = 0; i < associativityLevel; ++i)
-                {
-                    if (cacheAssociation[i][index].blockData.LRU > 0) //if the LRU bit is greater than 0
-                        --(cacheAssociation[i][index].blockData.LRU); //subract 1.
-                }
-                
-                
-                //check to see if this selected cache block is dirty.  If it is set the memRef to 2.
-                if (cacheAssociation[indexToUse][index].blockData.dirtyBit) //if dirtyBit =1
-                {
-                    memrefs = 2;
-                }
-                
-                //Now we know which set to update.  Perform the update.
-                cacheAssociation[indexToUse][index].blockData.dirtyBit = 1; //set Dirty bit to 1 to indicate it was written to
-                cacheAssociation[indexToUse][index].blockData.validBit = 1; //in case it is already not 1
-                cacheAssociation[indexToUse][index].blockData.Tag = tag;
-                cacheAssociation[indexToUse][index].blockData.LRU = (associativityLevel - 1); //set max val to associativity level
-                cacheAssociation[indexToUse][index].blockData.Data = 0; //we don't care about the data
-            }
-            
-            //output results
-            std::cout << std::right; //right align
-            std::cout << std::setw(4) << refCounter;
-            std::cout << std::setw(7) << "write";
-            std::cout << std::setw(9) << std::hex << address;
-            std::cout << std::setw(8) << std::hex << tag;
-            std::cout << std::setw(6) << std::dec << index;
-            std::cout << std::setw(7) << offset;
-            std::cout << std::setw(7);
-            if (isThere) //if it was a hit
-            {
-                std::cout << "hit";
-                ++hitCounter;
-            }
-            else
-            {
-                std::cout << "miss";
-                ++missCounter;
-            }
-            std::cout << std::setw(8) << memrefs;
-            std::cout << "\n"; //newline
-        
-        } //mode = write
-        
-        else //program should never arrive here
-        {
-            std::cerr << "There was a fatal error in processing.\n";
-            exit(EXIT_FAILURE);
         }
         
-        DumpCache(cacheAssociation,refCounter);
-    }//end main program loop
+        //HIT**********
+        if (isThere) //if we found a hit, behavior will vary depending on whether it is a READ or a WRITE
+        {
+            if (mode == 'R' || mode == 'r') //if we are in read mode, memref will be 0.
+            {
+                ; //do nothing
+            }
+            
+            else if (mode == 'W' || mode == 'w') // if we are in write mode, memref will be 0.
+            {
+                cacheAssociation[hitSet][index].blockData.dirtyBit = 1; //set dirty bit to 1, since we're writing to the block
+                cacheAssociation[hitSet][index].blockData.validBit = 1; //set valid bit to 1, regardless of previous state
+                cacheAssociation[hitSet][index].blockData.Tag      = tag; //set tag to computed value
+                cacheAssociation[hitSet][index].blockData.Data     = 0; //set data to 0, irrelevant for simulation
+                
+                //Now, determine what the LRU bits should be set to.
+                if (cacheAssociation[hitSet][index].blockData.LRU != (associativityLevel - 1)) //if the LRU bit is not the highest
+                {
+                    unsigned int LRU_Test = cacheAssociation[hitSet][index].blockData.LRU; //get current LRU value
+                    for (size_t i = 0; i < associativityLevel; ++i) //subtract 1 from LRUs that are greater than LRU_Test
+                    {
+                        if (cacheAssociation[i][index].blockData.LRU > LRU_Test)
+                            --(cacheAssociation[i][index].blockData.LRU);
+                    }
+                    cacheAssociation[hitSet][index].blockData.LRU = (associativityLevel - 1); //now, set LRU of hit block to highest
+                }
+            } //else if - write mode
+            
+            else //program should never get here
+            {
+                std::cerr << "A fatal error occurred in HIT where the mode was neither Read nor Write.\n";
+                exit(EXIT_FAILURE);
+            }
+        } //HIT
+        
+        else //MISS********** - we did not find a match, now determine which to overwrite.  Memref value will vary.
+        {
+            memrefs = 1; //memrefs will be at least 1.
+            
+            if (mode == 'R' || mode == 'r') //if we are in read mode with a miss
+            {
+                size_t indexToUse = 0; //first, determine which index to use.  Assume we start with 0.
+                for (size_t i = 0; i < associativityLevel; ++i)
+                {
+                    if (cacheAssociation[i][index].blockData.LRU == 0)
+                    {
+                        indexToUse = i;
+                        break;  //once 0 is found, break out of loop.
+                    }
+                }
+                
+                if (cacheAssociation[indexToUse][index].blockData.dirtyBit == 1) //if the block we're about to overwrite is dirty
+                {
+                    memrefs = 2; //set memrefs =2
+                    cacheAssociation[indexToUse][index].blockData.dirtyBit = 0; //set dirtyBit back to 0, this is read mode
+                }
+                
+                //Now, update the remaining portions of the block.
+                cacheAssociation[indexToUse][index].blockData.validBit = 1; //in case it is already not 1
+                cacheAssociation[indexToUse][index].blockData.Tag = tag;
+                cacheAssociation[indexToUse][index].blockData.Data = 0; //we don't care about the data
+                
+                //Now, determine what the LRU bits should be set to.
+                for (unsigned int i = 0; i < associativityLevel; ++i)
+                {
+                    if (cacheAssociation[i][index].blockData.LRU > 0) //if the LRU bit is greater than 0
+                        --(cacheAssociation[i][index].blockData.LRU); //subract 1.
+                }
+                
+                //Finally, update the LRU of the replaced block.
+                cacheAssociation[indexToUse][index].blockData.LRU = (associativityLevel - 1); //set max val to associativity level
+            } //MISS - read mode
+            
+            else if (mode == 'W' || mode == 'w') //if we are in write mode with a miss
+            {
+                size_t indexToUse = 0; //first, determine which index to use.  Assume we start with 0.
+                for (size_t i = 0; i < associativityLevel; ++i)
+                {
+                    if (cacheAssociation[i][index].blockData.LRU == 0)
+                    {
+                        indexToUse = i;
+                        break;  //once 0 is found, break out of loop.
+                    }
+                }
+                
+                if (cacheAssociation[indexToUse][index].blockData.dirtyBit == 1) //if the block we're about to overwrite is dirty
+                {
+                    memrefs = 2; //set memrefs =2
+                    cacheAssociation[indexToUse][index].blockData.dirtyBit = 1; //maintain the dirty bit set.
+                }
+                
+                //Now, update the remaining portions of the block.
+                cacheAssociation[indexToUse][index].blockData.validBit = 1; //in case it is already not 1
+                cacheAssociation[indexToUse][index].blockData.Tag = tag;
+                cacheAssociation[indexToUse][index].blockData.Data = 0; //we don't care about the data
+                
+                //Now, determine what the LRU bits should be set to.
+                for (unsigned int i = 0; i < associativityLevel; ++i)
+                {
+                    if (cacheAssociation[i][index].blockData.LRU > 0) //if the LRU bit is greater than 0
+                        --(cacheAssociation[i][index].blockData.LRU); //subract 1.
+                }
+                
+                //Finally, update the LRU of the replaced block.
+                cacheAssociation[indexToUse][index].blockData.LRU = (associativityLevel - 1); //set max val to associativity level
+            } //MISS - write mode
+            
+            else //program should never get here
+            {
+                std::cerr << "A fatal error occurred in MISS where the mode was neither R nor W.\n";
+                exit(EXIT_FAILURE);
+            }
+        } //MISS
+        
+        //output results
+        std::cout << std::right; //right align
+        std::cout << std::setw(4) << refCounter;
+        std::cout << std::setw(7);
+        if (mode == 'R' || mode == 'r')
+            std::cout << "read";
+        if (mode == 'W' || mode == 'w')
+            std::cout << "write";
+        std::cout << std::setw(9) << std::hex << address;
+        std::cout << std::setw(8) << std::hex << tag;
+        std::cout << std::setw(6) << std::dec << index;
+        std::cout << std::setw(7) << offset;
+        std::cout << std::setw(7);
+        if (isThere) //if it was a hit
+        {
+            std::cout << "hit";
+            ++hitCounter;
+        }
+        else
+        {
+            std::cout << "miss";
+            ++missCounter;
+        }
+        std::cout << std::setw(8) << memrefs;
+        std::cout << "\n"; //newline
+
+    //DumpCache(cacheAssociation,refCounter);
+    } //Main Program Loop
     
     PrintSummary(hitCounter,missCounter,refCounter);
-
 } //end main
 
 
@@ -502,7 +453,7 @@ size_t ReadDataTrace(std::vector<std::string> & traceDat)
     
     
     //*************comment out this section to prepare for cin read
-    std::ifstream inDatFile("test.dat",std::ios::in);
+    std::ifstream inDatFile("andrewTest.dat",std::ios::in);
     if (!inDatFile)
     {
         std::cerr << "Failed to read data file.\n";
