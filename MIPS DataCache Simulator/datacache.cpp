@@ -8,6 +8,13 @@
  1) Reads the configuration file using the ReadConfig() function to determine the set configuration and line size.
  2) Prints the configuration using the PrintConfig() function.
  3) Builds the sets assuming the maximum number and associativity. The program may or may not use all of them depending on the configuration.
+ 4) Enteres the main loop and interprets the data line by line.  Note that the data is extraced once from the cin stream and then stored in an 
+    array "TraceDat" for future use.
+ 5) Outputs an error to cerr if a size or alignment problem is detected.  In this case no counters are incremented.
+ 5) Outputs each line based on the results and increments the appropriate counters (hit or miss) as well as the access counter.
+ 
+ Compilation statement:
+ g++ -I. -Wall -Wextra -o datacache_i.x datacache.cpp
  
  Note that the code is self-documenting.
  */
@@ -34,18 +41,6 @@ size_t numEntries;
 const size_t MAX_SETS = 10;
 const size_t MAX_ASSOCIATIVITY = 8;
 
-
-//Function prototypes
-void ReadConfig();
-void PrintConfig();
-size_t ReadDataTrace(std::vector<std::string> &);
-void ParseDataTrace(size_t);
-void ModeValidityCheck(const char);
-bool SizeCheck(const unsigned int);
-bool AlignmentCheck(const unsigned int,const unsigned int);
-void PrintSummary(size_t,size_t,size_t);
-
-
 class CacheBlock
 {
 public:
@@ -70,7 +65,7 @@ public:
     }
     
     //default destructor
-   ~CacheBlock()
+    ~CacheBlock()
     {};
     
     //copy constructor, necessary for vector assignment
@@ -101,8 +96,7 @@ public:
         unsigned short validBit;
     } blockData;
     
-}; //end class DataStruct
-
+}; //end class CacheBlock
 
 
 //Important typeDefs
@@ -110,7 +104,19 @@ typedef std::vector<CacheBlock> cacheSet; //vector of cacheBlocks of 8192 sets
 typedef std::vector<cacheSet> setAssociation; //vector of cacheSets
 
 
+//Function prototypes
+void ReadConfig();
+void PrintConfig();
+size_t ReadDataTrace(std::vector<std::string> &);
+void ParseDataTrace(size_t);
+void ModeValidityCheck(const char);
+bool SizeCheck(const unsigned int);
+bool AlignmentCheck(const unsigned int,const unsigned int);
+void PrintSummary(size_t,size_t,size_t);
+void DumpCache(setAssociation &, size_t);
 
+
+//Begin main program
 int main()
 {
     //Establish Configuration
@@ -153,42 +159,21 @@ int main()
         sizeError = SizeCheck(dataSize);
         if(sizeError)
         {
-            std::cout << "line " << (i + 1) << " has illegal size " << dataSize << "\n";
+            std::cerr << "line " << (i + 1) << " has illegal size " << dataSize << "\n";
             continue; //continue to next line
         }
         
         alignmentError = AlignmentCheck(dataSize, address);
         if (alignmentError)
         {
-            std::cout << "line " << (i + 1) << " has misaligned reference at address " << std::hex << address << " for size " <<
+            std::cerr << "line " << (i + 1) << " has misaligned reference at address " << std::hex << address << " for size " <<
                 std::dec << dataSize << "\n";
             continue; //continue to next line
         }
         
         //no size or alignment errors, increment ref Counter
         ++refCounter;
-        
-        /*Methodology for determining appropriate values for index, offset, and tag:
-         The address is a 32-bit number represented as
-         
-         XXXX XXXX XXXX XXXX XXXX XXXX XXXX XXXX
-         
-         In order to determine the appropriate index, offset, and tag value, we must first determine
-         the number of bits that represent the index and offset.  Then, the reamining bits represent the
-         tag.
-         
-         The structure of the address is as follows:
-         
-         |---------tag----------|--index---|--offset--|
-         
-         The number of bits for the index and offset are computed as:
-         
-         offset = log2(lineSize), e.g. log2(16) = 4
-         index = log2(setSize) e.g. log2(8) = 3
-         tag = any bits that remain
-         */
-        
-        
+
         //Determine the index, offset, and tag
         unsigned int tempAddress = address; //to preserve oriignal address value
         
@@ -204,7 +189,6 @@ int main()
         
         tag = tempAddress; //determine tag from remaining bits
         
-    
         //Write the result to the cache
         //We don't need to worry about numSets; this is taken care of by Index.
         //Line size is irrelevant for this portion
@@ -316,9 +300,10 @@ int main()
         //                   cacheAssociation[index is 0 to (associativityLevel -1)]
         else if (mode == 'W' || mode == 'w')
         {
-            //set memref to 0 by default, for write, memref can only be 0 or 1
+            //set memref to 0 by default
             memrefs = 0;
             
+            //********************************HIT**********************************************
             //Check to see if tag is alreay there in corresponding index in one of the sets, HIT
             for (size_t i = 0; i < associativityLevel; ++i)
             {
@@ -327,19 +312,40 @@ int main()
                 if (isValid && (tempTag == tag))  //its a hit
                 {
                     isThere = 1;
+                    
+                    /*
                     //check to see if this selected cache block is dirty
                     if (cacheAssociation[i][index].blockData.dirtyBit) //if it is already a dirtyBit
                     {
                         memrefs = 1; //memref will be 1, since we need to write the value back to memory.
                     }
+                     */
+            
                     //we're writing to the location, so we MUST mark it as dirty
                     cacheAssociation[i][index].blockData.dirtyBit = 1; //ensure the bit stays dirty
+                    
+                    
+                    
+                    //subtract 1 from every LRU assuming it is not already 0.
+                    //only do this if the block we're writing do is NOT already assigned the highest LRU level
+                    if (cacheAssociation[i][index].blockData.LRU != (associativityLevel-1))
+                    {
+                        for (unsigned int i = 0; i < associativityLevel; ++i)
+                        {
+                            if (cacheAssociation[i][index].blockData.LRU > 0) //if the LRU bit is greater than 0
+                                --(cacheAssociation[i][index].blockData.LRU); //subract 1.
+                        }
+                    }
+                    
+                    //now we need to ensure that LRU gets updated with the highest LRU level
+                    cacheAssociation[i][index].blockData.LRU = (associativityLevel - 1); //set max val to associativity level
+                     
                 }
             }
             
             if (!isThere) //if the data was not found, MISS
             {
-                memrefs = 1; //memref is at least 1 since it is a miss
+                memrefs = 1; //mmemref will be at least 1
                 
                 //assume that we are starting with index 0 and try to find one that has a lower value
                 //"0" indicates least recently used
@@ -360,6 +366,7 @@ int main()
                     if (cacheAssociation[i][index].blockData.LRU > 0) //if the LRU bit is greater than 0
                         --(cacheAssociation[i][index].blockData.LRU); //subract 1.
                 }
+                
                 
                 //check to see if this selected cache block is dirty.  If it is set the memRef to 2.
                 if (cacheAssociation[indexToUse][index].blockData.dirtyBit) //if dirtyBit =1
@@ -405,6 +412,7 @@ int main()
             exit(EXIT_FAILURE);
         }
         
+        DumpCache(cacheAssociation,refCounter);
     }//end main program loop
     
     PrintSummary(hitCounter,missCounter,refCounter);
@@ -499,8 +507,9 @@ size_t ReadDataTrace(std::vector<std::string> & traceDat)
     std::streambuf *cinBuf, *datBuf;
     cinBuf = std::cin.rdbuf(); //backs up the std::cin buffer.
     
+    
     //*************comment out this section to prepare for cin read
-    std::ifstream inDatFile("testBig4.dat",std::ios::in);
+    std::ifstream inDatFile("test.dat",std::ios::in);
     if (!inDatFile)
     {
         std::cerr << "Failed to read data file.\n";
@@ -509,6 +518,7 @@ size_t ReadDataTrace(std::vector<std::string> & traceDat)
     datBuf = inDatFile.rdbuf(); //obtains buffer for inFile stream
     std::cin.rdbuf(datBuf);   //Assign cin to the data buffer.  Now, cin will be reading from file.
     //*************comment out this section to prepare for cin read
+    
     
     std::string inputLine;
     numDataLines = 0;
@@ -555,4 +565,46 @@ bool AlignmentCheck(const unsigned int size, const unsigned int address)
         return 1;
     else
         return 0;
+}
+
+//dumpCache - Used for Debugging
+void DumpCache(setAssociation & cacheAssociation, size_t refCounter)
+{
+    std::cout << "\n\nReference: " << refCounter << "\n";
+    std::cout << "----------" << "\n";
+    for (size_t i = 0; i < numSets; ++i)
+    {
+        std::cout << "Index: " << i << "\n";
+        for (size_t j = 0; j < associativityLevel; ++j)
+        {
+            std::cout << "Valid Bit: " << cacheAssociation[j][i].blockData.validBit << "\t";
+        }
+        std::cout << std::flush << "\n";
+        for (size_t j = 0; j < associativityLevel; ++j)
+        {
+            std::cout << "Dirty Bit: " << cacheAssociation[j][i].blockData.dirtyBit << "\t";
+        }
+        std::cout << std::flush << "\n";
+        for (size_t j = 0; j < associativityLevel; ++j)
+        {
+            std::cout << "Tag      : " << cacheAssociation[j][i].blockData.Tag << "\t";
+        }
+        std::cout << std::flush << "\n";
+        for (size_t j = 0; j < associativityLevel; ++j)
+        {
+            std::cout << "Data     : " << cacheAssociation[j][i].blockData.Data << "\t";
+        }
+        std::cout << std::flush << "\n";
+        for (size_t j = 0; j < associativityLevel; ++j)
+        {
+            std::cout << "Valid Bit: " << cacheAssociation[j][i].blockData.validBit << "\t";
+        }
+        std::cout << std::flush << "\n";
+        for (size_t j = 0; j < associativityLevel; ++j)
+        {
+            std::cout << "LRU Bit  : " << cacheAssociation[j][i].blockData.LRU << "\t";
+        }
+        std::cout << std::flush << "\n";
+        std::cout << "\n\n";
+    }
 }
