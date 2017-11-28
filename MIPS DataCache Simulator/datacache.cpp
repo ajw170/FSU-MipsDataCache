@@ -420,13 +420,6 @@ int main()
 } //end main
 
 
-
-
-
-
-
-
-
 /* Function Definitions and Implementations */
 
 //Reads the configuration file and assigns values to program variables.
