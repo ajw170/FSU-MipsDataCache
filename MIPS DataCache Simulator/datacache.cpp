@@ -17,6 +17,8 @@
  g++ -I. -Wall -Wextra -o datacache_i.x datacache.cpp
  
  Note that the code is self-documenting.
+ 
+ Test of branch.
  */
 
 #include <iostream>
