@@ -1,0 +1,222 @@
+1   read        0       0     0      0   miss       1
+
+
+Cache state after reference: 1
+----------
+Index: 0
+Valid Bit: 1	Valid Bit: 0	Valid Bit: 0	Valid Bit: 0
+Dirty Bit: 0	Dirty Bit: 0	Dirty Bit: 0	Dirty Bit: 0
+Tag      : 0	Tag      : 0	Tag      : 0	Tag      : 0
+Data     : 0	Data     : 0	Data     : 0	Data     : 0
+Valid Bit: 1	Valid Bit: 0	Valid Bit: 0	Valid Bit: 0
+LRU Bit  : 3	LRU Bit  : 0	LRU Bit  : 0	LRU Bit  : 0
+
+
+2  write        4       0     0      4    hit       0
+
+
+Cache state after reference: 2
+----------
+Index: 0
+Valid Bit: 1	Valid Bit: 0	Valid Bit: 0	Valid Bit: 0
+Dirty Bit: 1	Dirty Bit: 0	Dirty Bit: 0	Dirty Bit: 0
+Tag      : 0	Tag      : 0	Tag      : 0	Tag      : 0
+Data     : 0	Data     : 0	Data     : 0	Data     : 0
+Valid Bit: 1	Valid Bit: 0	Valid Bit: 0	Valid Bit: 0
+LRU Bit  : 3	LRU Bit  : 0	LRU Bit  : 0	LRU Bit  : 0
+
+
+3   read        8       1     0      0   miss       1
+
+
+Cache state after reference: 3
+----------
+Index: 0
+Valid Bit: 1	Valid Bit: 1	Valid Bit: 0	Valid Bit: 0
+Dirty Bit: 1	Dirty Bit: 0	Dirty Bit: 0	Dirty Bit: 0
+Tag      : 0	Tag      : 1	Tag      : 0	Tag      : 0
+Data     : 0	Data     : 0	Data     : 0	Data     : 0
+Valid Bit: 1	Valid Bit: 1	Valid Bit: 0	Valid Bit: 0
+LRU Bit  : 2	LRU Bit  : 3	LRU Bit  : 0	LRU Bit  : 0
+
+
+4  write        c       1     0      4    hit       0
+
+
+Cache state after reference: 4
+----------
+Index: 0
+Valid Bit: 1	Valid Bit: 1	Valid Bit: 0	Valid Bit: 0
+Dirty Bit: 1	Dirty Bit: 1	Dirty Bit: 0	Dirty Bit: 0
+Tag      : 0	Tag      : 1	Tag      : 0	Tag      : 0
+Data     : 0	Data     : 0	Data     : 0	Data     : 0
+Valid Bit: 1	Valid Bit: 1	Valid Bit: 0	Valid Bit: 0
+LRU Bit  : 2	LRU Bit  : 3	LRU Bit  : 0	LRU Bit  : 0
+
+
+5   read        9       1     0      1    hit       0
+
+
+Cache state after reference: 5
+----------
+Index: 0
+Valid Bit: 1	Valid Bit: 1	Valid Bit: 0	Valid Bit: 0
+Dirty Bit: 1	Dirty Bit: 1	Dirty Bit: 0	Dirty Bit: 0
+Tag      : 0	Tag      : 1	Tag      : 0	Tag      : 0
+Data     : 0	Data     : 0	Data     : 0	Data     : 0
+Valid Bit: 1	Valid Bit: 1	Valid Bit: 0	Valid Bit: 0
+LRU Bit  : 2	LRU Bit  : 3	LRU Bit  : 0	LRU Bit  : 0
+
+
+6  write        f       1     0      7    hit       0
+
+
+Cache state after reference: 6
+----------
+Index: 0
+Valid Bit: 1	Valid Bit: 1	Valid Bit: 0	Valid Bit: 0
+Dirty Bit: 1	Dirty Bit: 1	Dirty Bit: 0	Dirty Bit: 0
+Tag      : 0	Tag      : 1	Tag      : 0	Tag      : 0
+Data     : 0	Data     : 0	Data     : 0	Data     : 0
+Valid Bit: 1	Valid Bit: 1	Valid Bit: 0	Valid Bit: 0
+LRU Bit  : 2	LRU Bit  : 3	LRU Bit  : 0	LRU Bit  : 0
+
+
+7   read       10       2     0      0   miss       1
+
+
+Cache state after reference: 7
+----------
+Index: 0
+Valid Bit: 1	Valid Bit: 1	Valid Bit: 1	Valid Bit: 0
+Dirty Bit: 1	Dirty Bit: 1	Dirty Bit: 0	Dirty Bit: 0
+Tag      : 0	Tag      : 1	Tag      : 2	Tag      : 0
+Data     : 0	Data     : 0	Data     : 0	Data     : 0
+Valid Bit: 1	Valid Bit: 1	Valid Bit: 1	Valid Bit: 0
+LRU Bit  : 1	LRU Bit  : 2	LRU Bit  : 3	LRU Bit  : 0
+
+
+8  write       11       2     0      1    hit       0
+
+
+Cache state after reference: 8
+----------
+Index: 0
+Valid Bit: 1	Valid Bit: 1	Valid Bit: 1	Valid Bit: 0
+Dirty Bit: 1	Dirty Bit: 1	Dirty Bit: 1	Dirty Bit: 0
+Tag      : 0	Tag      : 1	Tag      : 2	Tag      : 0
+Data     : 0	Data     : 0	Data     : 0	Data     : 0
+Valid Bit: 1	Valid Bit: 1	Valid Bit: 1	Valid Bit: 0
+LRU Bit  : 1	LRU Bit  : 2	LRU Bit  : 3	LRU Bit  : 0
+
+
+9   read       15       2     0      5    hit       0
+
+
+Cache state after reference: 9
+----------
+Index: 0
+Valid Bit: 1	Valid Bit: 1	Valid Bit: 1	Valid Bit: 0
+Dirty Bit: 1	Dirty Bit: 1	Dirty Bit: 1	Dirty Bit: 0
+Tag      : 0	Tag      : 1	Tag      : 2	Tag      : 0
+Data     : 0	Data     : 0	Data     : 0	Data     : 0
+Valid Bit: 1	Valid Bit: 1	Valid Bit: 1	Valid Bit: 0
+LRU Bit  : 1	LRU Bit  : 2	LRU Bit  : 3	LRU Bit  : 0
+
+
+10  write        5       0     0      5    hit       0
+
+
+Cache state after reference: 10
+----------
+Index: 0
+Valid Bit: 1	Valid Bit: 1	Valid Bit: 1	Valid Bit: 0
+Dirty Bit: 1	Dirty Bit: 1	Dirty Bit: 1	Dirty Bit: 0
+Tag      : 0	Tag      : 1	Tag      : 2	Tag      : 0
+Data     : 0	Data     : 0	Data     : 0	Data     : 0
+Valid Bit: 1	Valid Bit: 1	Valid Bit: 1	Valid Bit: 0
+LRU Bit  : 3	LRU Bit  : 1	LRU Bit  : 2	LRU Bit  : 0
+
+
+11   read       27       4     0      7   miss       1
+
+
+Cache state after reference: 11
+----------
+Index: 0
+Valid Bit: 1	Valid Bit: 1	Valid Bit: 1	Valid Bit: 1
+Dirty Bit: 1	Dirty Bit: 1	Dirty Bit: 1	Dirty Bit: 0
+Tag      : 0	Tag      : 1	Tag      : 2	Tag      : 4
+Data     : 0	Data     : 0	Data     : 0	Data     : 0
+Valid Bit: 1	Valid Bit: 1	Valid Bit: 1	Valid Bit: 1
+LRU Bit  : 2	LRU Bit  : 0	LRU Bit  : 1	LRU Bit  : 3
+
+
+12  write       2e       5     0      6   miss       2
+
+
+Cache state after reference: 12
+----------
+Index: 0
+Valid Bit: 1	Valid Bit: 1	Valid Bit: 1	Valid Bit: 1
+Dirty Bit: 1	Dirty Bit: 1	Dirty Bit: 1	Dirty Bit: 0
+Tag      : 0	Tag      : 5	Tag      : 2	Tag      : 4
+Data     : 0	Data     : 0	Data     : 0	Data     : 0
+Valid Bit: 1	Valid Bit: 1	Valid Bit: 1	Valid Bit: 1
+LRU Bit  : 1	LRU Bit  : 3	LRU Bit  : 0	LRU Bit  : 2
+
+
+13   read       2f       5     0      7    hit       0
+
+
+Cache state after reference: 13
+----------
+Index: 0
+Valid Bit: 1	Valid Bit: 1	Valid Bit: 1	Valid Bit: 1
+Dirty Bit: 1	Dirty Bit: 1	Dirty Bit: 1	Dirty Bit: 0
+Tag      : 0	Tag      : 5	Tag      : 2	Tag      : 4
+Data     : 0	Data     : 0	Data     : 0	Data     : 0
+Valid Bit: 1	Valid Bit: 1	Valid Bit: 1	Valid Bit: 1
+LRU Bit  : 1	LRU Bit  : 3	LRU Bit  : 0	LRU Bit  : 2
+
+
+14  write        6       0     0      6    hit       0
+
+
+Cache state after reference: 14
+----------
+Index: 0
+Valid Bit: 1	Valid Bit: 1	Valid Bit: 1	Valid Bit: 1
+Dirty Bit: 1	Dirty Bit: 1	Dirty Bit: 1	Dirty Bit: 0
+Tag      : 0	Tag      : 5	Tag      : 2	Tag      : 4
+Data     : 0	Data     : 0	Data     : 0	Data     : 0
+Valid Bit: 1	Valid Bit: 1	Valid Bit: 1	Valid Bit: 1
+LRU Bit  : 3	LRU Bit  : 2	LRU Bit  : 0	LRU Bit  : 1
+
+
+15   read       17       2     0      7    hit       0
+
+
+Cache state after reference: 15
+----------
+Index: 0
+Valid Bit: 1	Valid Bit: 1	Valid Bit: 1	Valid Bit: 1
+Dirty Bit: 1	Dirty Bit: 1	Dirty Bit: 1	Dirty Bit: 0
+Tag      : 0	Tag      : 5	Tag      : 2	Tag      : 4
+Data     : 0	Data     : 0	Data     : 0	Data     : 0
+Valid Bit: 1	Valid Bit: 1	Valid Bit: 1	Valid Bit: 1
+LRU Bit  : 3	LRU Bit  : 2	LRU Bit  : 0	LRU Bit  : 1
+
+
+16  write       3a       7     0      2   miss       2
+
+
+Cache state after reference: 16
+----------
+Index: 0
+Valid Bit: 1	Valid Bit: 1	Valid Bit: 1	Valid Bit: 1
+Dirty Bit: 1	Dirty Bit: 1	Dirty Bit: 1	Dirty Bit: 0
+Tag      : 0	Tag      : 5	Tag      : 7	Tag      : 4
+Data     : 0	Data     : 0	Data     : 0	Data     : 0
+Valid Bit: 1	Valid Bit: 1	Valid Bit: 1	Valid Bit: 1
+LRU Bit  : 2	LRU Bit  : 1	LRU Bit  : 3	LRU Bit  : 0

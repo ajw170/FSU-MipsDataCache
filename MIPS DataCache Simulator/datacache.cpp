@@ -514,7 +514,7 @@ bool AlignmentCheck(const unsigned int size, const unsigned int address)
 //dumpCache - Used for Debugging
 void DumpCache(setAssociation & cacheAssociation, size_t refCounter)
 {
-    std::cout << "\n\nReference: " << refCounter << "\n";
+    std::cout << "\n\nCache state after reference: " << refCounter << "\n";
     std::cout << "----------" << "\n";
     for (size_t i = 0; i < numSets; ++i)
     {
