@@ -18,9 +18,6 @@
  
  Note that the code is self-documenting.
  
- Test of branch.
- 
- Test 2.
  */
 
 #include <iostream>
