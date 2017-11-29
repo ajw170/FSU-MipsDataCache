@@ -142,8 +142,8 @@ int main()
     unsigned int    index;
     unsigned int    offset;
     unsigned int    tag;
-    size_t          hitCounter;
-    size_t          missCounter;
+    size_t          hitCounter = 0;
+    size_t          missCounter = 0;
     size_t          refCounter = 0; //holds the number of references read
     
     //Output header
