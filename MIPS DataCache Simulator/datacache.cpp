@@ -19,6 +19,8 @@
  -------------------------------------
  
  Note that the code is self-documenting.
+ 
+ Master code is final.
  */
 
 #include <iostream>
