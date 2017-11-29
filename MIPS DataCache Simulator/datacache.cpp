@@ -20,7 +20,7 @@
  
  Note that the code is self-documenting.
  
- Master code is final.
+ Master code is final, extra branches removed.
  */
 
 #include <iostream>
