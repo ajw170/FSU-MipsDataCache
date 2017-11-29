@@ -13,8 +13,10 @@
  5) Outputs an error to cerr if a size or alignment problem is detected.  In this case no counters are incremented.
  5) Outputs each line based on the results and increments the appropriate counters (hit or miss) as well as the access counter.
  
+ -------------------------------------
  Compilation statement:
- g++ -I. -Wall -Wextra -o datacache_i.x datacache.cpp
+ g++ -I. -odatacache_i.x datacache.cpp
+ -------------------------------------
  
  Note that the code is self-documenting.
  */
