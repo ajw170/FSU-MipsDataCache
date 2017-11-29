@@ -464,7 +464,7 @@ size_t ReadDataTrace(std::vector<std::string> & traceDat)
     
     
     //*************comment out this section to prepare for cin read
-    std::ifstream inDatFile("test.dat",std::ios::in);
+    std::ifstream inDatFile("testBig4.dat",std::ios::in);
     if (!inDatFile)
     {
         std::cerr << "Failed to read data file.\n";
