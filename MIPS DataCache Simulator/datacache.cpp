@@ -225,6 +225,7 @@ int main()
         }
         
         //HIT**********
+        //Now includes update LRU.
         if (isThere) //if we found a hit, behavior will vary depending on whether it is a READ or a WRITE
         {
             if (mode == 'R' || mode == 'r') //if we are in read mode, memref will be 0.
