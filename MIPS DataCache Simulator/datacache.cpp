@@ -459,12 +459,12 @@ void PrintSummary(size_t hitCounter, size_t missCounter, size_t refCounter)
 //Reads trace.dat file and stores it in a vector for later use
 size_t ReadDataTrace(std::vector<std::string> & traceDat)
 {
-    //NOTE - This will need to be changed for final program when input will be directed via stdin on command line.
-    //This program was developed and tested using XCode which does not directly support re-directed input
+    //NOTE - This program was developed and tested using XCode which does not directly support re-directed input
+    //Therefore the unneccesary commands will be commented out when compiling for UNIX command line.
     std::streambuf *cinBuf, *datBuf;
     cinBuf = std::cin.rdbuf(); //backs up the std::cin buffer.
     
-    
+    /*
     //*************comment out this section to prepare for cin read
     std::ifstream inDatFile("testBig4.dat",std::ios::in);
     if (!inDatFile)
@@ -475,7 +475,7 @@ size_t ReadDataTrace(std::vector<std::string> & traceDat)
     datBuf = inDatFile.rdbuf(); //obtains buffer for inFile stream
     std::cin.rdbuf(datBuf);   //Assign cin to the data buffer.  Now, cin will be reading from file.
     //*************comment out this section to prepare for cin read
-    
+    */
     
     std::string inputLine;
     numDataLines = 0;
