@@ -38,7 +38,7 @@ size_t numDataLines;
 size_t numEntries;
 
 //Program constants; represent the greatest possible extents
-const size_t MAX_SETS = 10;
+const size_t MAX_SETS = 8192;
 const size_t MAX_ASSOCIATIVITY = 8;
 
 class CacheBlock
@@ -230,7 +230,16 @@ int main()
         {
             if (mode == 'R' || mode == 'r') //if we are in read mode, memref will be 0.
             {
-                ; //do nothing
+                if (cacheAssociation[hitSet][index].blockData.LRU != (associativityLevel - 1)) //if the LRU bit is not the highest
+                {
+                    unsigned int LRU_Test = cacheAssociation[hitSet][index].blockData.LRU; //get current LRU value
+                    for (size_t i = 0; i < associativityLevel; ++i) //subtract 1 from LRUs that are greater than LRU_Test
+                    {
+                        if (cacheAssociation[i][index].blockData.LRU > LRU_Test)
+                            --(cacheAssociation[i][index].blockData.LRU);
+                    }
+                    cacheAssociation[hitSet][index].blockData.LRU = (associativityLevel - 1); //now, set LRU of hit block to highest
+                }
             }
             
             else if (mode == 'W' || mode == 'w') // if we are in write mode, memref will be 0.
@@ -313,8 +322,9 @@ int main()
                 if (cacheAssociation[indexToUse][index].blockData.dirtyBit == 1) //if the block we're about to overwrite is dirty
                 {
                     memrefs = 2; //set memrefs =2
-                    cacheAssociation[indexToUse][index].blockData.dirtyBit = 1; //maintain the dirty bit set.
                 }
+                
+                cacheAssociation[indexToUse][index].blockData.dirtyBit = 1; //maintain the dirty bit set, as we are writing to the block.
                 
                 //Now, update the remaining portions of the block.
                 cacheAssociation[indexToUse][index].blockData.validBit = 1; //in case it is already not 1
@@ -454,7 +464,7 @@ size_t ReadDataTrace(std::vector<std::string> & traceDat)
     
     
     //*************comment out this section to prepare for cin read
-    std::ifstream inDatFile("trace.dat",std::ios::in);
+    std::ifstream inDatFile("test.dat",std::ios::in);
     if (!inDatFile)
     {
         std::cerr << "Failed to read data file.\n";

@@ -30,9 +30,6 @@
 		989DDA201FCBCC2B00626234 /* trace2.dat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = trace2.dat; sourceTree = "<group>"; };
 		989DDA231FCBE51300626234 /* testBig4.dat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = testBig4.dat; sourceTree = "<group>"; };
 		98A11CCE1FCC673A0075F32A /* uhTest.out */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = uhTest.out; sourceTree = "<group>"; };
-		98A11CCF1FCC7D1C0075F32A /* testBig5.dat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = testBig5.dat; sourceTree = "<group>"; };
-		98A11CD01FCC7E3D0075F32A /* testBig6.dat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = testBig6.dat; sourceTree = "<group>"; };
-		98A11CD11FCC7E7E0075F32A /* testBig7.dat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = testBig7.dat; sourceTree = "<group>"; };
 		98A11CD21FCC7F140075F32A /* test.dat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = test.dat; sourceTree = "<group>"; };
 		98A11CD31FCCE2590075F32A /* andrewTest.dat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = andrewTest.dat; sourceTree = "<group>"; };
 		98A11CD41FCD1FE50075F32A /* cachedump.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = cachedump.txt; sourceTree = "<group>"; };
@@ -81,9 +78,6 @@
 				989DDA231FCBE51300626234 /* testBig4.dat */,
 				98A11CD31FCCE2590075F32A /* andrewTest.dat */,
 				98A11CD21FCC7F140075F32A /* test.dat */,
-				98A11CD01FCC7E3D0075F32A /* testBig6.dat */,
-				98A11CD11FCC7E7E0075F32A /* testBig7.dat */,
-				98A11CCF1FCC7D1C0075F32A /* testBig5.dat */,
 			);
 			path = "MIPS DataCache Simulator";
 			sourceTree = "<group>";
